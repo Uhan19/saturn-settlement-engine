@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Saturn Redemption Settlement — Visual Guide</title>
+<style>
+  :root{
+    --ink:#0f172a; --muted:#55627a; --line:#d7dde8; --bg:#f6f8fb; --card:#ffffff;
+    --chain:#2563eb; --chain-bg:#eef4ff;
+    --off:#d97706;  --off-bg:#fff7ec;
+    --eng:#7c3aed;  --eng-bg:#f5f0ff;
+    --money:#059669;
+    --danger:#dc2626;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);line-height:1.55}
+  .wrap{max-width:1020px;margin:0 auto;padding:28px 20px 80px}
+  h1{font-size:26px;margin:8px 0 4px}
+  h2{font-size:20px;margin:0 0 6px}
+  .sub{color:var(--muted);font-size:14.5px;margin:0 0 10px}
+  section{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px 24px;margin:22px 0}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--muted);margin-top:10px}
+  .key{display:inline-flex;align-items:center;gap:6px}
+  .swatch{width:12px;height:12px;border-radius:3px;display:inline-block}
+  .pillrow{display:flex;gap:0;align-items:stretch;flex-wrap:nowrap;overflow-x:auto;padding:6px 0}
+  .lifestep{flex:1;min-width:170px;border:1.5px solid var(--line);border-radius:10px;padding:12px 14px;background:#fff;position:relative}
+  .lifestep + .lifestep{margin-left:34px}
+  .lifestep + .lifestep::before{content:"➜";position:absolute;left:-27px;top:42%;color:#9aa7bd;font-size:16px}
+  .lifestep b{display:block;font-size:14px;margin-bottom:4px}
+  .lifestep .who{display:inline-block;font-size:11px;font-weight:600;letter-spacing:.02em;padding:2px 8px;border-radius:99px;margin-bottom:6px}
+  .who.user{background:var(--chain-bg);color:var(--chain)}
+  .who.saturn{background:var(--eng-bg);color:var(--eng)}
+  .lifestep p{margin:0;font-size:12.8px;color:var(--muted)}
+  .three{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin-top:12px}
+  .mcard{border:1.5px solid var(--line);border-radius:12px;padding:14px 16px;background:#fff}
+  .mcard h3{margin:0 0 6px;font-size:15px}
+  .mcard .tag{font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:2px 8px;border-radius:99px}
+  .tag.net{background:#e7f7f0;color:var(--money)}
+  .tag.internal{background:var(--eng-bg);color:var(--eng)}
+  .tag.external{background:var(--off-bg);color:var(--off)}
+  .mcard p{font-size:13.5px;color:var(--muted);margin:8px 0 0}
+  .mcard .flow{font-size:12.8px;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin-top:10px;color:var(--ink)}
+  .converge{text-align:center;color:var(--muted);font-size:13.5px;margin:14px 0 0}
+  .converge code{background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:2px 7px;font-size:12.5px}
+
+  /* interactive diagram */
+  .controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:12px 0 10px}
+  .mbtn{border:1.5px solid var(--line);background:#fff;border-radius:99px;padding:7px 16px;font-size:13.5px;font-weight:600;cursor:pointer;color:var(--muted)}
+  .mbtn.sel{border-color:var(--ink);color:var(--ink);background:var(--bg)}
+  .nav{margin-left:auto;display:flex;gap:8px;align-items:center}
+  .nbtn{border:none;background:var(--ink);color:#fff;border-radius:8px;padding:8px 16px;font-size:13.5px;font-weight:600;cursor:pointer}
+  .nbtn:disabled{background:#c3ccd9;cursor:default}
+  .stepnum{font-size:12.5px;color:var(--muted);min-width:70px;text-align:center}
+  .minilegend{font-size:12.5px;color:var(--muted);margin:0 0 6px}
+  svg{width:100%;height:auto;display:block;background:#fcfdfe;border:1px solid var(--line);border-radius:12px}
+
+  svg .box rect.main{fill:#fff;stroke:#c3cad6;stroke-width:1.3;rx:10}
+  svg .box .accent{rx:2}
+  svg .box text{font-size:13px;fill:var(--ink)}
+  svg .box .small{font-size:11.3px;fill:var(--muted)}
+  svg .box.on rect.main{stroke:#0f172a;stroke-width:2.4}
+  svg.focus .box{opacity:.4;transition:opacity .2s}
+  svg.focus .box.on{opacity:1}
+
+  svg .arrow{fill:none;stroke-width:2;opacity:0;transition:opacity .25s}
+  svg .arrow.dashed{stroke-dasharray:5 4}
+  svg .arrow.on{opacity:1;stroke-width:3}
+  svg .arrow.done{opacity:.25}
+  svg .alabel{font-size:11px;fill:var(--ink);opacity:0;font-weight:600}
+  svg .alabel.on{opacity:1}
+
+  #chipg rect{fill:#f1f4f9;stroke:#c3cad6;stroke-width:1.2}
+  #chipg text{fill:var(--muted);font-size:11.5px;font-weight:700}
+  #chipg.Requested rect{fill:#eef4ff;stroke:var(--chain)} #chipg.Requested text{fill:var(--chain)}
+  #chipg.InProgress rect{fill:#fff7ec;stroke:var(--off)} #chipg.InProgress text{fill:var(--off)}
+  #chipg.Processed rect{fill:#e7f7f0;stroke:var(--money)} #chipg.Processed text{fill:var(--money)}
+  #chipg.Claimed rect{fill:#ececec;stroke:#8a8a8a} #chipg.Claimed text{fill:#555}
+
+  .caption{border:1.5px solid var(--line);border-left:5px solid var(--ink);border-radius:10px;background:#fff;padding:14px 18px;margin-top:14px;min-height:92px}
+  .caption h3{margin:0 0 5px;font-size:15px}
+  .caption p{margin:0;font-size:13.8px;color:#333c4e}
+
+  /* waterfall */
+  .gate{border:1.5px solid var(--line);border-radius:12px;padding:14px 18px;background:#fff;margin:0}
+  .gate .q{font-weight:700;font-size:14.5px}
+  .gate .yes{display:flex;gap:10px;align-items:flex-start;background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:10px 12px;margin-top:10px;font-size:13.5px}
+  .gate .yes b{white-space:nowrap}
+  .gate .lim{font-size:12px;color:var(--muted)}
+  .down{ text-align:center;color:#9aa7bd;font-size:13px;margin:8px 0;}
+  .down b{color:var(--muted)}
+
+  /* engine loop */
+  .loop{display:flex;gap:0;flex-wrap:nowrap;overflow-x:auto;align-items:stretch;padding:6px 0}
+  .lstep{flex:1;min-width:150px;border:1.5px solid var(--eng);border-radius:10px;background:var(--eng-bg);padding:11px 13px;position:relative}
+  .lstep + .lstep{margin-left:30px}
+  .lstep + .lstep::before{content:"➜";position:absolute;left:-24px;top:42%;color:var(--eng)}
+  .lstep b{font-size:13px;display:block;margin-bottom:3px;color:var(--eng)}
+  .lstep p{margin:0;font-size:12.3px;color:#4a3f66}
+  .loopback{color:var(--eng);font-size:12.5px;text-align:center;margin-top:8px;font-weight:600}
+  .callout{border-left:5px solid var(--money);background:#f2fbf7;border-radius:8px;padding:12px 16px;font-size:13.8px;margin-top:14px}
+  .callout.red{border-left-color:var(--danger);background:#fdf3f3}
+
+  /* method 3 chain */
+  .chain{display:flex;flex-wrap:wrap;gap:10px 26px;padding:8px 0}
+  .state{position:relative;border:1.5px solid var(--line);border-radius:9px;background:#fff;padding:8px 12px;min-width:118px}
+  .state:not(:last-child)::after{content:"➜";position:absolute;right:-20px;top:30%;color:#9aa7bd;font-size:14px}
+  .state b{display:block;font-size:12px;letter-spacing:.02em}
+  .state .how{display:inline-block;font-size:10.5px;font-weight:700;border-radius:99px;padding:1px 8px;margin-top:5px}
+  .how.chainb{background:var(--chain-bg);color:var(--chain)}
+  .how.api{background:#e7f7f0;color:var(--money)}
+  .how.human{background:var(--off-bg);color:var(--off)}
+  .how.engine{background:var(--eng-bg);color:var(--eng)}
+  .state p{margin:4px 0 0;font-size:11.3px;color:var(--muted);max-width:150px}
+
+  /* timeline */
+  .tl{display:grid;grid-template-columns:repeat(8,1fr);gap:4px;margin:14px 0 4px}
+  .tl .wk{font-size:11px;color:var(--muted);text-align:center}
+  .bars{display:grid;grid-template-columns:repeat(8,1fr);gap:4px;margin-bottom:14px}
+  .bar{height:40px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:700;color:#fff}
+  .b1{grid-column:1/4;background:#64748b}
+  .b2{grid-column:4/7;background:var(--chain)}
+  .b3{grid-column:7/9;background:var(--money)}
+  .phase{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-top:10px}
+  .pcard{border:1.5px solid var(--line);border-radius:11px;padding:12px 15px;background:#fff;font-size:13px}
+  .pcard b{display:block;margin-bottom:4px;font-size:13.5px}
+  .pcard ul{margin:6px 0 0;padding-left:18px;color:var(--muted)}
+  .pcard li{margin:3px 0}
+
+  .safe2{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;margin-top:12px}
+  .kswitch{display:flex;gap:10px;align-items:flex-start;margin-top:8px;font-size:13.5px}
+  .kswitch .n{background:var(--danger);color:#fff;font-weight:700;border-radius:99px;min-width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:12px;margin-top:1px}
+  footer{color:var(--muted);font-size:12.5px;text-align:center;margin-top:30px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>Saturn redemption settlement — how it all works</h1>
+  <p class="sub">Visual companion to the take-home design doc. Start with the big picture, then use the interactive walkthrough to follow one redemption through each of the three settlement methods.</p>
+  <div class="legend">
+    <span class="key"><span class="swatch" style="background:var(--chain)"></span> On-chain (Ethereum contracts &amp; wallets)</span>
+    <span class="key"><span class="swatch" style="background:var(--off)"></span> Off-chain (broker, banks, cash)</span>
+    <span class="key"><span class="swatch" style="background:var(--eng)"></span> The new settlement engine</span>
+    <span class="key"><span class="swatch" style="background:var(--money)"></span> Money (USDat) moving</span>
+  </div>
+
+  <!-- 1. lifecycle -->
+  <section>
+    <h2>1 · A redemption request's life (this already exists today)</h2>
+    <p class="sub">When a user wants to exit sUSDat, they don't get paid instantly. Their request becomes an NFT that moves through four states. The middle two transitions are what the engine automates.</p>
+    <div class="pillrow">
+      <div class="lifestep">
+        <span class="who user">user acts</span>
+        <b>Requested</b>
+        <p>User calls <code>requestRedeem(shares, minValue)</code>. Shares are held in the queue; an NFT is minted as the receipt. <code>minValue</code> = the least USDat the user will accept.</p>
+      </div>
+      <div class="lifestep">
+        <span class="who saturn">Saturn locks</span>
+        <b>In&nbsp;Progress</b>
+        <p>Saturn picks a batch of requests and locks them. From here the user can only <em>lower</em> their minValue, so the batch stays stable while it settles.</p>
+      </div>
+      <div class="lifestep">
+        <span class="who saturn">Saturn pays</span>
+        <b>Processed</b>
+        <p><code>processRequests</code> runs: USDat arrives in the queue, each request gets its share, the escrowed sUSDat is burned. The money now waits for the user.</p>
+      </div>
+      <div class="lifestep">
+        <span class="who user">user acts</span>
+        <b>Claimed</b>
+        <p>User calls <code>claim</code>: the USDat is transferred to their wallet and the NFT receipt is burned. Done.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. one call three sources -->
+  <section>
+    <h2>2 · The key idea: one payment, three places the money can come from</h2>
+    <p class="sub">Every settlement ends in the exact same on-chain call. The only real decision is which pot of USDat pays for it.</p>
+    <div class="three">
+      <div class="mcard">
+        <span class="tag internal">Method 1 · use Saturn's own USDat</span>
+        <h3>Saturn buys the exposure</h3>
+        <p>Saturn pays redeemers from its own wallet (the "backbook") and ends up owning the STRC they exited. Only done when Saturn actively <em>wants</em> more STRC — a business decision, kept as a human-set config flag. That flag is the top-level check in the engine's decision order.</p>
+        <div class="flow">Saturn's wallet ➜ queue ➜ redeemers<br><span style="color:var(--muted)">Saturn's STRC holdings go up by the same amount</span></div>
+      </div>
+      <div class="mcard">
+        <span class="tag net">Method 2 · use the vault's own USDat</span>
+        <h3>Pay from the vault's idle cash</h3>
+        <p>The vault usually holds idle USDat — mostly recent deposits not yet converted to STRC. That USDat pays the redeemers directly. Nothing is bought or sold in the real world, so it's instant and works on weekends. The default rung when the buy-STRC flag is off.</p>
+        <div class="flow">vault's idle USDat ➜ queue ➜ redeemers<br><span style="color:var(--muted)">on paper, the vault "buys" the leavers' STRC from them at the oracle price</span></div>
+      </div>
+      <div class="mcard">
+        <span class="tag external">Method 3 · sell STRC for real</span>
+        <h3>Go to the market</h3>
+        <p>The last resort, when there isn't enough cash in the treasury or the vault: sell STRC through the broker, wait for the cash (T+1), bring it back on-chain as USDC, mint USDat, then pay. Takes days and crosses systems Saturn doesn't control.</p>
+        <div class="flow">broker sale ➜ cash ➜ USDC ➜ mint USDat ➜ queue ➜ redeemers</div>
+      </div>
+    </div>
+    <p class="converge">All three funnel into the same call: <code>processRequests(batch, totalUsdat, strcSold, price)</code> — which independently re-checks prices and every user's minValue before paying anyone.</p>
+  </section>
+
+  <!-- 3. interactive -->
+  <section>
+    <h2>3 · Follow one redemption, step by step</h2>
+    <p class="sub">Pick a settlement method, then click <b>Next</b> (or use ← → arrow keys). The diagram starts empty and builds up as the story advances: the boxes doing the work light up, each movement appears as an arrow, and earlier arrows stay behind as a faint trail. The badge inside the queue box shows the request's current state.</p>
+
+    <div class="controls">
+      <button class="mbtn" id="mb1" onclick="setMethod(1)">Method 1 · Saturn's USDat</button>
+      <button class="mbtn sel" id="mb2" onclick="setMethod(2)">Method 2 · vault USDat</button>
+      <button class="mbtn" id="mb3" onclick="setMethod(3)">Method 3 · external sale</button>
+      <div class="nav">
+        <button class="nbtn" id="prev" onclick="move(-1)">‹ Back</button>
+        <span class="stepnum" id="stepnum"></span>
+        <button class="nbtn" id="next" onclick="move(1)">Next ›</button>
+      </div>
+    </div>
+    <p class="minilegend">Box colors: <b style="color:var(--chain)">blue</b> = on Ethereum · <b style="color:var(--off)">orange</b> = off-chain world · <b style="color:var(--eng)">purple</b> = the engine. Solid arrows = something moves; dashed arrows = reading / checking.</p>
+
+    <svg id="diagram" viewBox="0 0 960 545" aria-label="System diagram">
+      <defs>
+        <marker id="mk_blue"   markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#2563eb"/></marker>
+        <marker id="mk_green"  markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#059669"/></marker>
+        <marker id="mk_orange" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#d97706"/></marker>
+        <marker id="mk_purple" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#7c3aed"/></marker>
+      </defs>
+
+      <!-- arrows -->
+      <path id="ar_req"    class="arrow" data-c="#2563eb" data-mk="mk_blue"   d="M200,155 L254,155"/>
+      <path id="ar_escrow" class="arrow" data-c="#2563eb" data-mk="mk_blue"   d="M430,155 L484,155"/>
+      <path id="ar_claim"  class="arrow" data-c="#059669" data-mk="mk_green"  d="M490,105 L206,105"/>
+      <path id="ar_oracle" class="arrow dashed" data-c="#2563eb" data-mk="mk_blue" d="M565,54 L565,74"/>
+      <path id="ar_read"   class="arrow dashed" data-c="#7c3aed" data-mk="mk_purple" d="M700,120 L646,120"/>
+      <path id="ar_stage"  class="arrow" data-c="#7c3aed" data-mk="mk_purple" d="M815,200 L815,244"/>
+      <path id="ar_sign"   class="arrow" data-c="#7c3aed" data-mk="mk_purple" d="M700,265 L660,265 L660,150 L646,150"/>
+      <path id="ar_m2"     class="arrow" data-c="#059669" data-mk="mk_green"  d="M345,180 L345,250 L545,250 L545,186"/>
+      <path id="ar_m1"     class="arrow" data-c="#059669" data-mk="mk_green"  d="M135,420 L135,250 L545,250 L545,186"/>
+      <path id="ar_sell"   class="arrow" data-c="#d97706" data-mk="mk_orange" d="M700,180 L676,180 L676,390 L420,390 L420,414"/>
+      <path id="ar_t1"     class="arrow" data-c="#d97706" data-mk="mk_orange" d="M510,470 L564,470"/>
+      <path id="ar_m3"     class="arrow" data-c="#059669" data-mk="mk_green"  d="M650,420 L650,240 L600,240 L600,186"/>
+
+      <!-- arrow labels -->
+      <text id="lb_ar_req"    class="alabel" x="182" y="174">requestRedeem</text>
+      <text id="lb_ar_escrow" class="alabel" x="415" y="174">shares + NFT</text>
+      <text id="lb_ar_claim"  class="alabel" x="300" y="97">claim → USDat</text>
+      <text id="lb_ar_oracle" class="alabel" x="577" y="70">price check</text>
+      <text id="lb_ar_read"   class="alabel" x="650" y="138">reads every tick</text>
+      <text id="lb_ar_stage"  class="alabel" x="825" y="228">prepare tx</text>
+      <text id="lb_ar_sign"   class="alabel" x="668" y="225">signed tx</text>
+      <text id="lb_ar_m2"     class="alabel" x="420" y="242">USDat</text>
+      <text id="lb_ar_m1"     class="alabel" x="220" y="242">USDat</text>
+      <text id="lb_ar_sell"   class="alabel" x="452" y="382">sell order (unique ID)</text>
+      <text id="lb_ar_t1"     class="alabel" x="506" y="458">T+1 cash</text>
+      <text id="lb_ar_m3"     class="alabel" x="658" y="330">freshly minted USDat</text>
+
+      <!-- boxes: on-chain (blue accents) -->
+      <g class="box" id="b_oracle">
+        <rect class="main" x="468" y="10" width="194" height="44"/>
+        <rect class="accent" x="468" y="10" width="5" height="44" fill="#2563eb"/>
+        <text x="484" y="28" font-weight="600">STRC price oracle</text>
+        <text x="484" y="44" class="small">daily Nasdaq price, sanity-checked</text>
+      </g>
+      <g class="box" id="b_user">
+        <rect class="main" x="40" y="80" width="160" height="100"/>
+        <rect class="accent" x="40" y="80" width="5" height="100" fill="#2563eb"/>
+        <text x="56" y="104" font-weight="600">User wallet</text>
+        <text x="56" y="124" class="small">holds sUSDat shares,</text>
+        <text x="56" y="140" class="small">wants USDat back</text>
+      </g>
+      <g class="box" id="b_vault">
+        <rect class="main" x="260" y="80" width="170" height="100"/>
+        <rect class="accent" x="260" y="80" width="5" height="100" fill="#2563eb"/>
+        <text x="276" y="104" font-weight="600">sUSDat vault</text>
+        <text x="276" y="124" class="small">idle USDat (deposit float)</text>
+        <text x="276" y="140" class="small">+ STRC book entry</text>
+      </g>
+      <g class="box" id="b_queue">
+        <rect class="main" x="490" y="80" width="150" height="100"/>
+        <rect class="accent" x="490" y="80" width="5" height="100" fill="#2563eb"/>
+        <text x="506" y="104" font-weight="600">Withdrawal queue</text>
+        <text x="506" y="124" class="small">one NFT per request</text>
+        <g id="chipg">
+          <rect x="506" y="140" width="120" height="24" rx="12"/>
+          <text id="chip_t" x="566" y="156" text-anchor="middle">state: —</text>
+        </g>
+      </g>
+      <g class="box" id="b_backbook">
+        <rect class="main" x="40" y="420" width="190" height="100"/>
+        <rect class="accent" x="40" y="420" width="5" height="100" fill="#2563eb"/>
+        <text x="56" y="446" font-weight="600">Saturn's own wallet</text>
+        <text x="56" y="466" class="small">the company's USDat</text>
+        <text x="56" y="482" class="small">(the "backbook")</text>
+      </g>
+
+      <!-- engine (purple accents) -->
+      <g class="box" id="b_engine">
+        <rect class="main" x="700" y="60" width="230" height="140"/>
+        <rect class="accent" x="700" y="60" width="5" height="140" fill="#7c3aed"/>
+        <text x="716" y="84" font-weight="600">Settlement engine</text>
+        <text x="716" y="103" class="small">① Indexer — mirror chain → DB</text>
+        <text x="716" y="121" class="small">② Planner — batch, method, simulate</text>
+        <text x="716" y="139" class="small">③ Risk module — caps, kill switch</text>
+        <text x="716" y="157" class="small">④ Executor — sign via Fireblocks</text>
+        <text x="716" y="178" class="small" font-style="italic">memory: Postgres (+ method 3 tracker)</text>
+      </g>
+      <g class="box" id="b_fb">
+        <rect class="main" x="700" y="250" width="230" height="80"/>
+        <rect class="accent" x="700" y="250" width="5" height="80" fill="#7c3aed"/>
+        <text x="716" y="274" font-weight="600">Fireblocks (holds the key)</text>
+        <text x="716" y="294" class="small">signs transactions; its own rules</text>
+        <text x="716" y="310" class="small">refuse over-limit amounts</text>
+      </g>
+
+      <!-- off-chain (orange accents) -->
+      <g class="box" id="b_broker">
+        <rect class="main" x="330" y="420" width="180" height="100"/>
+        <rect class="accent" x="330" y="420" width="5" height="100" fill="#d97706"/>
+        <text x="346" y="446" font-weight="600">Broker</text>
+        <text x="346" y="466" class="small">holds the real STRC,</text>
+        <text x="346" y="482" class="small">sells it on Nasdaq</text>
+      </g>
+      <g class="box" id="b_cashmint">
+        <rect class="main" x="570" y="420" width="220" height="100"/>
+        <rect class="accent" x="570" y="420" width="5" height="100" fill="#d97706"/>
+        <text x="586" y="446" font-weight="600">Cash → USDC → USDat</text>
+        <text x="586" y="466" class="small">wire + on-ramp; some steps</text>
+        <text x="586" y="482" class="small">are a person, then USDat is</text>
+        <text x="586" y="498" class="small">minted, ready to pay</text>
+      </g>
+    </svg>
+
+    <div class="caption">
+      <h3 id="cap_t"></h3>
+      <p id="cap_d"></p>
+    </div>
+  </section>
+
+  <!-- 4. waterfall -->
+  <section>
+    <h2>4 · How the engine chooses the money source</h2>
+    <p class="sub">Not an optimizer — a fixed order of preference with limits set by humans. The "do we want STRC" flag is the top-level check; the market is the last resort.</p>
+
+    <div class="gate">
+      <div class="q">A batch is ready (requests waited long enough, or the total got big enough). Top-level check first: has Saturn switched on "we want to accumulate STRC" in the config?</div>
+      <div class="yes"><b>If yes →</b><span><b>Method 1</b>: pay from Saturn's own wallet (the backbook); Saturn keeps the STRC exposure. <span class="lim">Limit: the config's max spend and the treasury's USDat balance. Always needs a human click in v1 — Saturn is trading with its own users.</span></span></div>
+    </div>
+    <div class="down">flag off, or not enough treasury cash? <b>▼</b></div>
+    <div class="gate">
+      <div class="q">Does the vault have idle USDat above its configured floor?</div>
+      <div class="yes"><b>If yes →</b><span><b>Method 2</b>: pay redeemers from the vault's idle USDat. Instant, no outside party. <span class="lim">Limit: never draw the vault below the floor. Smaller automated allowance when the stock market is closed.</span></span></div>
+    </div>
+    <div class="down">not enough idle USDat either? <b>▼</b></div>
+    <div class="gate">
+      <div class="q">The batch goes to the market.</div>
+      <div class="yes"><b>Method 3 →</b><span>sell STRC at the broker and walk the multi-day workflow below.</span></div>
+    </div>
+  </section>
+
+  <!-- 5. engine loop -->
+  <section>
+    <h2>5 · The engine's heartbeat: the same five moves, every 30–60 seconds</h2>
+    <p class="sub">The engine never trusts its own memory. Each cycle it rebuilds its picture of the world from scratch and only then acts.</p>
+    <div class="loop">
+      <div class="lstep"><b>1 · Read the chain</b><p>Queue requests and states, vault balances, oracle price.</p></div>
+      <div class="lstep"><b>2 · Read Postgres</b><p>What did I plan? What did I already start? Any half-done work?</p></div>
+      <div class="lstep"><b>3 · Read the broker</b><p>Order status, fills, cash — wherever an API exists.</p></div>
+      <div class="lstep"><b>4 · Compare</b><p>What <em>is</em> vs. what <em>should be</em>. Anything out of line becomes a to-do or an alarm.</p></div>
+      <div class="lstep"><b>5 · Act once, safely</b><p>At most one next action per settlement, written down before and after.</p></div>
+    </div>
+    <div class="loopback">⟲ …then start over from step 1</div>
+    <div class="callout"><b>Why this shape:</b> if the engine crashes at any moment — even mid-settlement — nothing is lost. The next cycle re-reads everything and continues from whatever is actually true. Recovery isn't a special case; it's the only code path. And the queue contract itself refuses to pay the same request twice, so even a duplicated transaction fails harmlessly.</div>
+  </section>
+
+  <!-- 6. method 3 chain -->
+  <section>
+    <h2>6 · Method 3 up close: the multi-day workflow</h2>
+    <p class="sub">Each settlement that needs a real STRC sale walks this sequence of states, stored in Postgres. Every step forward is confirmed either automatically (chain or broker API) or by the operator entering a reference number. Every state has a maximum expected duration — sit too long and someone gets paged. It can stall, but never silently.</p>
+    <div class="chain">
+      <div class="state"><b>PLANNED</b><span class="how engine">engine</span><p>batch chosen, amounts computed</p></div>
+      <div class="state"><b>LOCKED</b><span class="how chainb">on-chain</span><p>requests frozen; mins can only go down</p></div>
+      <div class="state"><b>SELL_ORDERED</b><span class="how api">broker API</span><p>order placed with a unique ID so a retry can't sell twice</p></div>
+      <div class="state"><b>SOLD</b><span class="how api">broker API</span><p>fill confirmed; dollar amount now fixed</p></div>
+      <div class="state"><b>PROCEEDS_SETTLED</b><span class="how api">broker API</span><p>T+1: cash actually lands</p></div>
+      <div class="state"><b>OFF_RAMPED</b><span class="how human">human</span><p>wire sent; operator enters the reference #</p></div>
+      <div class="state"><b>USDAT_MINTED</b><span class="how chainb">on-chain</span><p>USDC → USDat via M0</p></div>
+      <div class="state"><b>FUNDED</b><span class="how chainb">on-chain</span><p>USDat sits in the processor wallet, ready</p></div>
+      <div class="state"><b>PROCESSED</b><span class="how chainb">on-chain</span><p>processRequests pays the batch</p></div>
+      <div class="state"><b>RECONCILED</b><span class="how engine">engine</span><p>closes only when broker, bank and chain numbers all agree</p></div>
+    </div>
+    <div class="callout red"><b>The known risk in this flow:</b> the sale fixes a dollar amount early, but the on-chain settlement is price-checked against the oracle <em>later</em>. If STRC moves a lot in between, the batch can land outside the allowed tolerance and get stuck. The fix is speed — every day cut from the cash path shrinks this window — plus re-checking the tolerance right before submitting, which the notes call out in the method 3 signals.</div>
+  </section>
+
+  <!-- 7. rollout -->
+  <section>
+    <h2>7 · How much the engine is allowed to do, and when</h2>
+    <p class="sub">Autonomy is granted in stages, and each stage has to be earned by the one before it. v1 ships at week 8.</p>
+    <div class="bars">
+      <div class="bar b1">Shadow</div>
+      <div class="bar b2">Co-pilot</div>
+      <div class="bar b3">Automated (Method 2 only)</div>
+    </div>
+    <div class="tl">
+      <div class="wk">wk 1</div><div class="wk">wk 2</div><div class="wk">wk 3</div><div class="wk">wk 4</div><div class="wk">wk 5</div><div class="wk">wk 6</div><div class="wk">wk 7</div><div class="wk">wk 8</div>
+    </div>
+    <div class="phase">
+      <div class="pcard"><b>Shadow (weeks 1–3) — watch &amp; recommend</b>
+        Can't move money at all. Posts to Slack: "here's the batch I'd form, the method split, the exact amounts." The founder keeps settling by hand; the engine's suggestions are scored against his real decisions to tune the settings.</div>
+      <div class="pcard"><b>Co-pilot (weeks 4–6) — compute everything, sign nothing</b>
+        Prepares the exact transactions; a human approves each with one click in Fireblocks; the engine submits, watches, retries and reconciles. The spreadsheet is gone. Method 3 tracked end-to-end with operator confirmations.</div>
+      <div class="pcard"><b>Automated settlement (weeks 7–8) — v1 ships</b>
+        Method 2 <em>only</em> runs with no human click, under limits enforced twice (engine + Fireblocks key rules): per batch, per day, smaller on weekends. Method 1 keeps the human click. Method 3 money stays human-moved.</div>
+      <div class="pcard"><b>After day 90</b>
+        <ul>
+          <li>Raise limits as the track record justifies</li>
+          <li>Broker API: Method 3 steps flip from human-confirmed to API-confirmed, one at a time</li>
+          <li>New on-chain settlement contract (atomic Method 2, on-chain limits) — after an audit</li>
+          <li>Analytics: time-to-claim, % settled internally, price-drift stats</li>
+        </ul></div>
+    </div>
+  </section>
+
+  <!-- 8. safety -->
+  <section>
+    <h2>8 · What keeps it safe</h2>
+    <div class="safe2">
+      <div class="mcard">
+        <h3>Every limit exists twice</h3>
+        <p>Spending caps live in the engine's risk checks <em>and</em> as signing rules on the Fireblocks key itself. If the engine has a bug — or is compromised — the key still refuses to sign beyond the limits. The engine's mistake cannot exceed the key's allowance.</p>
+      </div>
+      <div class="mcard">
+        <h3>Three independent kill switches</h3>
+        <div class="kswitch"><span class="n">1</span><span><b>Engine off-flag</b> — one config change and it stops planning and sending.</span></div>
+        <div class="kswitch"><span class="n">2</span><span><b>Revoke the Fireblocks rules</b> — the key stops signing, whatever the engine wants.</span></div>
+        <div class="kswitch"><span class="n">3</span><span><b>Pause the contract</b> — the queue itself stops, on-chain.</span></div>
+        <p style="font-size:12.5px;color:var(--muted);margin-top:8px">Any one of the three works even if the other two are unavailable.</p>
+      </div>
+    </div>
+    <div class="callout" style="margin-top:16px"><b>The rule behind everything:</b> every failure should end with the engine doing <em>nothing</em> — never with the engine doing the wrong thing. In this system waiting is always safe. A stalled settlement costs time; a wrong one costs money and trust.</div>
+  </section>
+
+  <footer>Prep material · companion to personal-notes.md · Saturn founding-engineer take-home</footer>
+</div>
+
+<script>
+(function(){
+  function step(t,d,hl,ar,chip){ return {t:t,d:d,hl:hl,ar:ar,chip:chip}; }
+
+  const pre = m => [
+    step("The whole system at a glance",
+      "Blue boxes live on Ethereum. Orange boxes are the brokerage-and-banking world where the real STRC and cash live. Purple is the new engine — one service with a Postgres database. The diagram is empty right now; arrows will appear as things happen. Click Next to start a redemption.",
+      [],[],null),
+    step("1 · The user asks to leave",
+      "The user calls requestRedeem(shares, minValue) on the vault. minValue is their protection: the smallest USDat payout they'll accept. They can change it freely while waiting.",
+      ['b_user','b_vault'],['ar_req'],null),
+    step("2 · The request becomes an NFT",
+      "The vault moves the user's sUSDat shares into the queue for safekeeping (they are not burned yet) and the queue mints an NFT to the user as the receipt. The request now sits in state Requested. Note: the user keeps market exposure — the payout is decided at settlement, not now.",
+      ['b_vault','b_queue'],['ar_escrow'],'Requested'),
+    step("3 · The engine notices",
+      "Every 30–60 seconds the engine re-reads the queue, the vault's balances, and the oracle price. When pending requests have waited long enough — or the total has grown big enough — it forms a batch, oldest requests first.",
+      ['b_engine','b_queue','b_oracle'],['ar_read','ar_oracle'],'Requested'),
+    step("4 · Pick the money source",
+      m===2 ? "The engine runs its decision order. The top-level check — Saturn's \"we want to accumulate STRC\" flag — is off, and the vault has idle USDat above its configured floor. So this batch settles from the vault's own money — Method 2, the default rung and the everyday case. No outside party will be involved."
+      : m===1 ? "The engine runs its decision order. The top-level check hits: Saturn's config has \"we want to accumulate STRC\" switched on, and the treasury has the USDat to fund it. So Saturn's own wallet (the backbook) will pay — Method 1. Because Saturn is trading with its own users, this path always requires a human approval."
+      : "The engine runs its decision order. The buy-STRC flag is off (or the treasury can't cover it), and the vault's idle USDat is below its floor. The batch has to be funded by a real STRC sale — Method 3, the multi-day last resort.",
+      m===2?['b_engine','b_vault']:m===1?['b_engine','b_backbook']:['b_engine','b_broker'],[],'Requested'),
+    step("5 · Dress rehearsal",
+      "Before touching anything real, the engine simulates the exact settlement transaction on a local copy of chain state: it recomputes every user's payout and checks every minValue and every price validation the contract will run. Requests that wouldn't clear their minValue are left out of the batch — they stay pending on-chain and get re-considered on a later cycle.",
+      ['b_engine'],[],'Requested'),
+    step("6 · Lock the batch",
+      "The engine asks Fireblocks to sign a lockRequests transaction. The chosen requests flip to In Progress: from now on users can only lower their minValue, so the batch stays exactly as simulated while it settles.",
+      ['b_engine','b_fb','b_queue'],['ar_stage','ar_sign'],'InProgress')
+  ];
+
+  const branch = {
+    2:[ step("7 · The vault buys the leavers' STRC",
+        "Two back-to-back transactions: first convertFromUsdat — on paper, the vault hands over idle USDat and takes ownership of the leaving users' STRC at the oracle price. No real-world trade happens. Because this is the pre-approved automated path (method 2 under caps), Fireblocks signs automatically — as long as the amount is inside the per-batch and per-day limits baked into the key's own rules.",
+        ['b_vault','b_queue','b_fb'],['ar_m2'],'InProgress'),
+       step("8 · Settlement",
+        "processRequests runs. The contract independently re-checks the price against the oracle and the total against the vault's value, splits the USDat among requests in proportion to shares, verifies every minValue one more time, and burns the escrowed shares. The requests flip to Processed — money is waiting.",
+        ['b_queue','b_oracle'],['ar_oracle'],'Processed') ],
+    1:[ step("7 · Saturn's own wallet pays",
+        "The engine stages the transaction and a human clicks approve in Fireblocks — always, for this method. Saturn's USDat flows to the queue, and Saturn now owns the STRC the redeemers exited (its holdings at the broker are re-assigned from the vault to Saturn). Same contract checks as always.",
+        ['b_backbook','b_queue','b_fb'],['ar_m1'],'InProgress'),
+       step("8 · Settlement",
+        "processRequests splits the USDat among the requests in proportion to shares, re-validates the price against the oracle and every user's minValue, and burns the escrowed shares. Requests flip to Processed.",
+        ['b_queue','b_oracle'],['ar_oracle'],'Processed') ],
+    3:[ step("7 · Sell real STRC at the broker",
+        "The engine places (or the operator confirms) a sale at the broker. The order carries a unique ID derived from this settlement, so if anything is ever retried the broker recognizes it as the same order instead of selling twice. From here the workflow tracker takes over — every step has a deadline and an alert.",
+        ['b_engine','b_broker'],['ar_sell'],'InProgress'),
+       step("8 · Cash comes home (this is the slow part)",
+        "The sale settles T+1; the cash is wired, converted to USDC, and minted into USDat. Some of these steps are a person doing a wire — the operator confirms each with a reference number, and the engine tracks, reminds and alarms if anything sits too long. Days can pass here; the requests stay locked.",
+        ['b_broker','b_cashmint'],['ar_t1'],'InProgress'),
+       step("9 · Settlement",
+        "The freshly minted USDat funds processRequests. The contract re-checks the execution price against the oracle now — which is why speed matters: if STRC moved too much since the sale, the batch lands outside tolerance and needs human attention. On success, requests flip to Processed.",
+        ['b_cashmint','b_queue','b_oracle'],['ar_m3','ar_oracle'],'Processed') ]
+  };
+
+  const post = [
+    step("Finally · the user claims",
+      "The user calls claim: their USDat transfers out of the queue to their wallet and the NFT receipt is burned. State: Claimed. End of story — and in the automated world, the time from request to here is minutes for the everyday case, not days.",
+      ['b_queue','b_user'],['ar_claim'],'Claimed')
+  ];
+
+  let method = 2, idx = 0, steps = [];
+  function build(){ steps = pre(method).concat(branch[method], post); }
+
+  function render(){
+    const svg = document.getElementById('diagram');
+    const s = steps[idx];
+
+    // boxes
+    document.querySelectorAll('#diagram .box').forEach(b=>b.classList.remove('on'));
+    s.hl.forEach(id=>{const el=document.getElementById(id); if(el)el.classList.add('on');});
+    svg.classList.toggle('focus', s.hl.length>0);
+
+    // arrows: hidden by default; trail = union of earlier steps; active = this step
+    const trail = new Set();
+    for(let i=0;i<idx;i++) steps[i].ar.forEach(a=>trail.add(a));
+    document.querySelectorAll('#diagram .arrow').forEach(a=>{
+      a.classList.remove('on','done');
+      a.style.stroke=''; a.removeAttribute('marker-end');
+      if(s.ar.includes(a.id)){
+        a.classList.add('on');
+        a.style.stroke=a.dataset.c;
+        a.setAttribute('marker-end','url(#'+a.dataset.mk+')');
+      } else if(trail.has(a.id)){
+        a.classList.add('done');
+        a.style.stroke=a.dataset.c;
+        a.setAttribute('marker-end','url(#'+a.dataset.mk+')');
+      }
+    });
+    document.querySelectorAll('#diagram .alabel').forEach(l=>l.classList.remove('on'));
+    s.ar.forEach(id=>{const l=document.getElementById('lb_'+id); if(l)l.classList.add('on');});
+
+    // chip
+    const chipg=document.getElementById('chipg');
+    chipg.setAttribute('class', s.chip||'');
+    document.getElementById('chip_t').textContent = 'state: '+(s.chip||'—');
+
+    // caption + nav
+    document.getElementById('cap_t').textContent = s.t;
+    document.getElementById('cap_d').textContent = s.d;
+    document.getElementById('stepnum').textContent = (idx+1)+' / '+steps.length;
+    document.getElementById('prev').disabled = idx===0;
+    document.getElementById('next').disabled = idx===steps.length-1;
+  }
+
+  window.setMethod = function(m){
+    method=m; idx=0; build();
+    [['mb1',1],['mb2',2],['mb3',3]].forEach(([id,v])=>{
+      document.getElementById(id).classList.toggle('sel', v===m);
+    });
+    render();
+  };
+  window.move = function(d){ idx=Math.max(0,Math.min(steps.length-1,idx+d)); render(); };
+  document.addEventListener('keydown',e=>{
+    if(e.key==='ArrowRight')move(1);
+    if(e.key==='ArrowLeft')move(-1);
+  });
+
+  build(); render();
+})();
+</script>
+</body>
+</html>
